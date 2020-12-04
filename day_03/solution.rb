@@ -2,7 +2,12 @@ require 'benchmark'
 require '../colors'
 
 def count_trees(rows)
-  0
+  rows.each_with_index.count do |row, index|
+    row.strip!
+    x = index * 3
+    tree = row[x % row.length] == '#'
+    tree
+  end
 end
 
 
@@ -21,7 +26,7 @@ example = '..##.......
 .#........#
 #.##...#...
 #...##....#
-.#..#...#.#'
+.#..#...#.#'.split("\n")
 
 puts 'Example:'
 count_trees(example).tap { |result| puts "Trees: #{result} #{answer_icon(result)}" }
