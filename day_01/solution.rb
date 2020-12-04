@@ -37,10 +37,15 @@ def remainder_with_hash(numbers)
 end
 
 example = [1721, 979, 366, 299, 675, 1456]
+
+def check_answer(result)
+  raise 'oops' unless result.product == 514579
+end
+
 puts 'Example:'
-puts "Brute force: #{brute_force(example)}"
-puts "Remainder: #{remainder(example)}"
-puts "Remainder with hash: #{remainder_with_hash(example)}"
+brute_force(example).tap { |result| puts "Brute force: #{result}"; check_answer(result) }
+remainder(example).tap { |result| puts "Remainder: #{result}"; check_answer(result) }
+remainder_with_hash(example).tap { |result| puts "Remainder with hash: #{result}"; check_answer(result) }
 puts ''
 
 puts 'Input:'
