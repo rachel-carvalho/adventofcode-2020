@@ -2,7 +2,12 @@ require 'benchmark'
 require '../colors'
 
 def count_valid_passports(file)
-  0
+  required_fields = %w{byr iyr eyr hgt hcl ecl pid}
+  passports = file.split("\n\n")
+  passports.count do |passport|
+    fields = passport.split(Regexp.new('\s')).map { |field| field.split(':') }.to_h
+    required_fields & fields.keys == required_fields
+  end
 end
 
 def answer_icon(result)
