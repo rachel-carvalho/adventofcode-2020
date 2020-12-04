@@ -24,7 +24,7 @@ end
 def remainder(numbers)
   numbers.each do |number|
     rest = 2020 - number
-    return Result.new(number, rest) if numbers.any?(rest)
+    return Result.new(number, rest) if numbers.include?(rest)
   end
 end
 
