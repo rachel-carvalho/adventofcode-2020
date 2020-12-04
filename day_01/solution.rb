@@ -2,15 +2,15 @@ require 'benchmark'
 require '../colors'
 
 class Result
-  attr_reader :pair, :product
+  attr_reader :numbers, :product
 
-  def initialize(n1, n2)
-    @pair = [n1, n2]
-    @product = n1 * n2
+  def initialize(*numbers)
+    @numbers = numbers
+    @product = numbers.reduce(:*)
   end
 
   def to_s
-    "#{pair.join(', ')}, product: #{product}"
+    "#{numbers.join(', ')}, product: #{product}"
   end
 end
 
