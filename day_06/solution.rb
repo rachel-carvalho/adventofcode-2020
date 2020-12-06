@@ -2,7 +2,9 @@ require 'benchmark'
 require '../colors'
 
 def sum_unique_answers(input)
-  0
+  input.split("\n\n").sum do |group|
+    group.split("\n").map(&:chars).flatten.uniq.count
+  end
 end
 
 def answer_icon(result)
