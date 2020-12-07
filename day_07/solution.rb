@@ -6,17 +6,28 @@ def count_parent_bags_of(hierarchy_rules, contained_bag)
 end
 
 def parents_by_color(hierarchy_rules)
+  rules = parse_rules(hierarchy_rules)
+  rules.map do |parent, children|
+    children.keys.map do |child|
+      [child, parent]
+    end
+  end.compact.flatten(1).group_by(&:first).map { |color, pair| [color, pair.map(&:last)] }.to_h
+end
+
+def parse_rules(hierarchy_rules)
   hierarchy_rules.map do |rule|
     rule.strip!
     rule.delete_suffix! '.'
     parent, inner = rule.split(' bags contain ')
+    contained = {}
     if inner != 'no other bags'
-      inner.split(', ').map do |bag|
-        color = bag[/\A\d+ (.+) bags?\z/, 1]
-        [color, parent]
-      end
+      contained = inner.split(', ').map do |bag|
+        quantity, color = bag.scan(/\A(\d+) (.+) bags?\z/).flatten
+        [color, quantity]
+      end.to_h
     end
-  end.compact.flatten(1).group_by(&:first).map { |color, pair| [color, pair.map(&:last)] }.to_h
+    [parent, contained]
+  end.to_h
 end
 
 def find_parents(parents_by_color, color, current_parents = [])
