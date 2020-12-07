@@ -1,22 +1,22 @@
 require 'benchmark'
 require '../colors'
-require 'pry'
 
 def count_parent_bags_of(hierarchy_rules, contained_bag)
-  parents_by_color = hierarchy_rules.map do |rule|
+  find_parents(parents_by_color(hierarchy_rules), contained_bag).flatten.uniq.count
+end
+
+def parents_by_color(hierarchy_rules)
+  hierarchy_rules.map do |rule|
     rule.strip!
     rule.delete_suffix! '.'
     parent, inner = rule.split(' bags contain ')
     if inner != 'no other bags'
       inner.split(', ').map do |bag|
         color = bag[/\A\d+ (.+) bags?\z/, 1]
-        binding.pry unless color
         [color, parent]
       end
     end
   end.compact.flatten(1).group_by(&:first).map { |color, pair| [color, pair.map(&:last)] }.to_h
-
-  find_parents(parents_by_color, contained_bag).flatten.uniq.count
 end
 
 def find_parents(parents_by_color, color, current_parents = [])
