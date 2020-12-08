@@ -2,7 +2,17 @@ require 'benchmark'
 require '../colors'
 
 def find_accumulator_before_loop(lines)
-  0
+  executed_lines = {}
+  current_line = 0
+
+  loop do
+    return executed_lines.values.sum if executed_lines[current_line]
+
+    operation, value = lines[current_line].strip.scan(/(\w{3}) ((\+|\-)\d+)/).first
+    acc = operation == 'acc' ? value.to_i : 0
+    executed_lines[current_line] = acc
+    current_line += operation == 'jmp' ? value.to_i : 1
+  end
 end
 
 def answer_icon(result)
