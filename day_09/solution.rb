@@ -1,8 +1,15 @@
 require 'benchmark'
 require '../colors'
 
-def find_invalid_number(numbers, preamble_size)
-  0
+def find_invalid_number(items, preamble_size)
+  numbers = items.map(&:to_i)
+
+  numbers.each_cons(preamble_size + 1) do |slice|
+    *preamble, number = slice
+    return number if preamble.none? do |n1|
+      (preamble - [n1]).map { |n2| n1 + n2 }.include?(number)
+    end
+  end
 end
 
 def answer_icon(result)
