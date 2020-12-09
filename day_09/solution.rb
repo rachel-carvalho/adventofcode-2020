@@ -12,8 +12,12 @@ def find_invalid_number(items, preamble_size)
   end
 end
 
-def answer_icon(result)
-  expected = 127
+def find_invalid_sum_sequence(items, preamble_size)
+  []
+end
+
+def answer_icon(result, sequence)
+  expected = sequence ? [15, 25, 47, 40] : 127
   result == expected ? '✔'.green : '✗'.red + " expected #{expected}"
 end
 
@@ -39,7 +43,8 @@ example = '35
 576'.split("\n")
 
 puts 'Example:'
-find_invalid_number(example, 5).tap { |result| puts "Invalid number: #{result} #{answer_icon(result)}" }
+find_invalid_number(example, 5).tap { |result| puts "Invalid number: #{result} #{answer_icon(result, false)}" }
+find_invalid_sum_sequence(example, 5).tap { |result| puts "Sequence which sums to invalid: #{result} #{answer_icon(result, true)}" }
 puts ''
 
 puts 'Input:'
@@ -47,5 +52,8 @@ input = File.readlines('input')
 Benchmark.bm do |benchmark|
   benchmark.report('Invalid number'.light_blue) do
     puts " (#{find_invalid_number(input, 25)})".green
+  end
+  benchmark.report('Sequence which sums to invalid'.light_blue) do
+    puts " (#{find_invalid_sum_sequence(input, 25)})".green
   end
 end
