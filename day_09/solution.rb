@@ -13,7 +13,17 @@ def find_invalid_number(items, preamble_size)
 end
 
 def find_invalid_sum_sequence(items, preamble_size)
-  []
+  numbers = items.map(&:to_i)
+  invalid_number = find_invalid_number(items, preamble_size)
+
+  numbers.each_with_index do |number, index|
+    sequence_size = 1
+    sequence = [number]
+    while sequence.count < (numbers.count - index) && sequence.sum < invalid_number do
+      sequence << numbers[index + sequence.count]
+      return sequence if sequence.sum == invalid_number
+    end
+  end
 end
 
 def answer_icon(result, sequence)
@@ -54,6 +64,7 @@ Benchmark.bm do |benchmark|
     puts " (#{find_invalid_number(input, 25)})".green
   end
   benchmark.report('Sequence which sums to invalid'.light_blue) do
-    puts " (#{find_invalid_sum_sequence(input, 25)})".green
+    sequence = find_invalid_sum_sequence(input, 25)
+    puts " (#{sequence}: #{sequence.min + sequence.max})".green
   end
 end
