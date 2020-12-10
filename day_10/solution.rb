@@ -2,7 +2,9 @@ require 'benchmark'
 require '../colors'
 
 def count_jolt_differences(adapters)
-  0
+  ([0] + adapters.sort + [adapters.max + 3]).each_cons(2).map do |pair|
+    pair.last - pair.first
+  end.tally
 end
 
 def answer_icon(result, example)
@@ -67,6 +69,7 @@ puts 'Input:'
 input = File.readlines('input').map(&:to_i)
 Benchmark.bm do |benchmark|
   benchmark.report('Differences'.light_blue) do
-    puts " (#{count_jolt_differences(input)})".green
+    differences = count_jolt_differences(input)
+    puts " (#{differences}: #{differences[1] * differences[3]})".green
   end
 end
