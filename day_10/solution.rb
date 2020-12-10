@@ -7,10 +7,16 @@ def count_jolt_differences(adapters)
   end.tally
 end
 
+def count_arrangements(adapters)
+  0
+end
+
 def answer_icon(result, example)
   answers = {
     small: { 1 => 7, 3 => 5 },
-    large: { 1 => 22, 3 => 10 }
+    large: { 1 => 22, 3 => 10 },
+    combination_small: 8,
+    combination_large: 19208,
   }
   expected = answers[example]
   result == expected ? '✔'.green : '✗'.red + " expected #{expected}"
@@ -63,6 +69,8 @@ example2 = '28
 puts 'Example:'
 count_jolt_differences(example1).tap { |result| puts "Differences (small): #{result} #{answer_icon(result, :small)}" }
 count_jolt_differences(example2).tap { |result| puts "Differences (large): #{result} #{answer_icon(result, :large)}" }
+count_arrangements(example1).tap { |result| puts "Arrangements (small): #{result} #{answer_icon(result, :combination_small)}" }
+count_arrangements(example2).tap { |result| puts "Arrangements (large): #{result} #{answer_icon(result, :combination_large)}" }
 puts ''
 
 puts 'Input:'
@@ -71,5 +79,8 @@ Benchmark.bm do |benchmark|
   benchmark.report('Differences'.light_blue) do
     differences = count_jolt_differences(input)
     puts " (#{differences}: #{differences[1] * differences[3]})".green
+  end
+  benchmark.report('Arrangements'.light_blue) do
+    puts " (#{count_arrangements(input)})".green
   end
 end
