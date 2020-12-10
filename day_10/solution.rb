@@ -2,13 +2,26 @@ require 'benchmark'
 require '../colors'
 
 def count_jolt_differences(adapters)
-  ([0] + adapters.sort + [adapters.max + 3]).each_cons(2).map do |pair|
-    pair.last - pair.first
-  end.tally
+  full_sequence(adapters).each_cons(2).map { |pair| pair.last - pair.first }.tally
 end
 
 def count_arrangements(adapters)
-  0
+  items = full_sequence(adapters)
+  branches = {}
+
+  items.each_with_index.reverse_each do |adapter, index|
+    next_items = (1..3).map { |offset| items[index + offset] }.filter do |following|
+      following && (following - adapter) <= 3
+    end
+
+    branches[adapter] = next_items.none? ? 1 : next_items.sum { |following| branches[following] }
+  end
+
+  branches[0]
+end
+
+def full_sequence(adapters)
+  [0] + adapters.sort + [adapters.max + 3]
 end
 
 def answer_icon(result, example)
