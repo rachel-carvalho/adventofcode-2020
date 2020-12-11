@@ -1,12 +1,12 @@
 require 'benchmark'
 require '../colors'
 
-def count_occupied_seats(rows)
+def count_occupied_seats(rows, line_of_sight = false)
   rows.each(&:strip!)
   previous_config = rows
   iterations = 0
   loop do
-    config = change_occupation(previous_config)
+    config = change_occupation(previous_config, line_of_sight)
     iterations += 1
     # puts "-#{iterations}-"
     # puts config.join "\n"
@@ -16,18 +16,26 @@ def count_occupied_seats(rows)
   end
 end
 
-def change_occupation(rows)
+def change_occupation(rows, line_of_sight)
   rows.map.with_index do |line, row|
     line.each_char.with_index.map do |spot, column|
-      if spot == 'L' && count_occupied_adjacent(rows, row, column).zero?
+      if spot == 'L' && count_occupied_around(rows, row, column, line_of_sight).zero?
         '#'
-      elsif spot == '#' && count_occupied_adjacent(rows, row, column) >= 4
+      elsif spot == '#' && count_occupied_around(rows, row, column, line_of_sight) >= 4
         'L'
       else
         spot
       end
     end.join('')
   end
+end
+
+def count_occupied_around(rows, row, column, line_of_sight)
+  line_of_sight ? count_occupied_line_of_sight(rows, row, column) : count_occupied_adjacent(rows, row, column)
+end
+
+def count_occupied_line_of_sight(rows, row, column)
+  0
 end
 
 def count_occupied_adjacent(rows, row, column)
@@ -43,8 +51,8 @@ def count_occupied_adjacent(rows, row, column)
   count
 end
 
-def answer_icon(result)
-  expected = 37
+def answer_icon(result, line_of_sight = false)
+  expected = line_of_sight ? 26 : 37
   result == expected ? '✔'.green : '✗'.red + " expected #{expected}"
 end
 
@@ -62,6 +70,7 @@ L.LLLLL.LL'.split("\n")
 
 puts 'Example:'
 count_occupied_seats(example).tap { |result| puts "Occupied seats: #{result} #{answer_icon(result)}" }
+count_occupied_seats(example, true).tap { |result| puts "Occupied seats: #{result} #{answer_icon(result, true)}" }
 puts ''
 
 puts 'Input:'
@@ -71,5 +80,9 @@ Benchmark.bm do |benchmark|
     count = count_occupied_seats(input)
     puts " (#{count})".green
     puts ' --> ☠️'.red if count != 2283
+  end
+  benchmark.report('Occupied seats (line of sight)'.light_blue) do
+    count = count_occupied_seats(input, true)
+    puts " (#{count})".green
   end
 end
