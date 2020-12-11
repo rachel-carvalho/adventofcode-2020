@@ -31,14 +31,16 @@ def change_occupation(rows)
 end
 
 def count_occupied_adjacent(rows, row, column)
-  ((row - 1)..(row + 1)).sum do |adjacent_row|
-    ((column - 1)..(column + 1)).count do |adjacent_column|
+  count = 0
+  ((row - 1)..(row + 1)).each do |adjacent_row|
+    ((column - 1)..(column + 1)).each do |adjacent_column|
       neighbor = adjacent_row != row || adjacent_column != column
       if neighbor && adjacent_row >= 0 && adjacent_column >= 0 && adjacent_row < rows.count && adjacent_column < rows[0].length
-        rows[adjacent_row][adjacent_column] == '#'
+        count += 1 if rows[adjacent_row][adjacent_column] == '#'
       end
     end
   end
+  count
 end
 
 def answer_icon(result)
