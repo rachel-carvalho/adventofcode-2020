@@ -2,12 +2,12 @@ require 'matrix'
 require 'benchmark'
 require '../colors'
 
-def count_occupied_seats(rows, line_of_sight = false)
+def count_occupied_seats(rows, line_of_sight = false, force_matrix = false)
   rows.each(&:strip!)
   previous_config = rows
   iterations = 0
   loop do
-    config = change_occupation(previous_config, line_of_sight)
+    config = change_occupation(previous_config, line_of_sight, force_matrix)
     iterations += 1
     # puts "-#{iterations}-"
     # puts config.join "\n"
@@ -17,13 +17,13 @@ def count_occupied_seats(rows, line_of_sight = false)
   end
 end
 
-def change_occupation(rows, line_of_sight)
+def change_occupation(rows, line_of_sight, force_matrix)
   rows.map.with_index do |line, row|
     line.each_char.with_index.map do |spot, column|
       max_occupied = line_of_sight ? 5 : 4
-      if spot == 'L' && count_occupied_around(rows, row, column, line_of_sight).zero?
+      if spot == 'L' && count_occupied_around(rows, row, column, line_of_sight, force_matrix).zero?
         '#'
-      elsif spot == '#' && count_occupied_around(rows, row, column, line_of_sight) >= max_occupied
+      elsif spot == '#' && count_occupied_around(rows, row, column, line_of_sight, force_matrix) >= max_occupied
         'L'
       else
         spot
@@ -32,8 +32,10 @@ def change_occupation(rows, line_of_sight)
   end
 end
 
-def count_occupied_around(rows, row, column, line_of_sight)
-  line_of_sight ? count_occupied_line_of_sight(rows, row, column) : count_occupied_adjacent(rows, row, column)
+def count_occupied_around(rows, row, column, line_of_sight, force_matrix)
+  return count_occupied_line_of_sight(rows, row, column, false) if line_of_sight
+  return count_occupied_line_of_sight(rows, row, column, true) if force_matrix
+  count_occupied_adjacent(rows, row, column)
 end
 
 def count_occupied_adjacent(rows, row, column)
@@ -49,7 +51,7 @@ def count_occupied_adjacent(rows, row, column)
   count
 end
 
-def count_occupied_line_of_sight(rows, row, column)
+def count_occupied_line_of_sight(rows, row, column, one_iteration)
   directions = {
     n: Vector[-1, 0],
     ne: Vector[-1, 1],
@@ -75,6 +77,7 @@ def count_occupied_line_of_sight(rows, row, column)
       count += 1 if spot == '#'
       seat = spot == '#' || spot == 'L'
       break if !spot || seat
+      break if one_iteration
       iterations += 1
     end
   end
@@ -100,6 +103,7 @@ L.LLLLL.LL'.split("\n")
 
 puts 'Example:'
 count_occupied_seats(example).tap { |result| puts "Occupied seats: #{result} #{answer_icon(result)}" }
+count_occupied_seats(example, false, true).tap { |result| puts "Occupied seats (matrix): #{result} #{answer_icon(result)}" }
 count_occupied_seats(example, true).tap { |result| puts "Occupied seats: #{result} #{answer_icon(result, true)}" }
 puts ''
 
@@ -108,6 +112,11 @@ input = File.readlines('input')
 Benchmark.bm do |benchmark|
   benchmark.report('Occupied seats'.light_blue) do
     count = count_occupied_seats(input)
+    puts " (#{count})".green
+    puts ' --> ☠️'.red if count != 2283
+  end
+  benchmark.report('Occupied seats - matrix'.light_blue) do
+    count = count_occupied_seats(input, false, true)
     puts " (#{count})".green
     puts ' --> ☠️'.red if count != 2283
   end
