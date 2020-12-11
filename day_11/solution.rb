@@ -1,4 +1,3 @@
-require 'matrix'
 require 'benchmark'
 require '../colors'
 
@@ -53,24 +52,23 @@ end
 
 def count_occupied_line_of_sight(rows, row, column, one_iteration)
   directions = {
-    n: Vector[-1, 0],
-    ne: Vector[-1, 1],
-    e: Vector[0, 1],
-    se: Vector[1, 1],
-    s: Vector[1, 0],
-    sw: Vector[1, -1],
-    w: Vector[0, -1],
-    nw: Vector[-1, -1]
+    n: [-1, 0],
+    ne: [-1, 1],
+    e: [0, 1],
+    se: [1, 1],
+    s: [1, 0],
+    sw: [1, -1],
+    w: [0, -1],
+    nw: [-1, -1]
   }
 
-  position = Vector[row, column]
   row_count = rows.count
   column_count = rows[0].length
   count = 0
   directions.each do |direction, step|
     iterations = 1
     loop do
-      neighbor = position + (step * iterations)
+      neighbor = [row + step[0] * iterations, column + step[1] * iterations]
       break if neighbor[0] < 0 || neighbor[0] >= row_count || neighbor[1] < 0 || neighbor[1] >= column_count
       neighbor_line = rows[neighbor[0]]
       spot = neighbor_line && neighbor_line[neighbor[1]]
