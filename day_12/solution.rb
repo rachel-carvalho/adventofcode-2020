@@ -59,6 +59,46 @@ class DirectedShip
   end
 end
 
+class WaypointShip
+  attr_reader :position, :waypoint
+
+  def initialize
+    @position = [0, 0]
+    @waypoint = [-1, 10]
+  end
+
+  def parse_movement(instructions)
+    return self
+    instructions.each do |instruction|
+      movement, value = instruction.scan(/(\w)(\d+)/).first
+      value = value.to_i
+
+      if %w[L R].include? movement
+        rotate(movement, value / 90)
+      else
+        move_direction = movement == 'F' ? @direction : movement
+        move(move_direction, value)
+      end
+    end
+    self
+  end
+
+  def to_s
+    "#{readable_coordinate(position[1], false)} #{readable_coordinate(position[0], true)} - #{manhattan_position}"
+  end
+
+  def manhattan_position
+    position.map(&:abs).sum
+  end
+
+    private
+
+    def readable_coordinate(point, vertical)
+      sign_name = point.positive? ? (vertical ? 'S' : 'E') : (vertical ? 'N' : 'W')
+      "#{point.abs}#{sign_name}"
+    end
+end
+
 def answer_icon(result, waypoint = false)
   expected = waypoint ? '214E 72S - 286' : '17E 8S - 25'
   result == expected ? '✔'.green : '✗'.red + " expected #{expected}"
@@ -72,15 +112,21 @@ R90
 F11'.split("\n")
 
 puts 'Example:'
-DirectedShip.new.parse_movement(example).tap { |result| puts "Manhattan position: #{result} #{answer_icon(result.to_s)}" }
+DirectedShip.new.parse_movement(example).tap { |result| puts "Manhattan position direct: #{result} #{answer_icon(result.to_s)}" }
+WaypointShip.new.parse_movement(example).tap { |result| puts "Manhattan position waypoint: #{result} #{answer_icon(result.to_s, true)}" }
 puts ''
 
 puts 'Input:'
 input = File.readlines('input')
 Benchmark.bm do |benchmark|
-  benchmark.report('Manhattan position'.light_blue) do
+  benchmark.report('Manhattan position direct'.light_blue) do
     ship = DirectedShip.new.parse_movement(input)
     puts " (#{ship})".green
     puts ' --> ☠️'.red if ship.to_s != '700E 1256S - 1956'
+  end
+  benchmark.report('Manhattan position waypoint'.light_blue) do
+    ship = WaypointShip.new.parse_movement(input)
+    puts " (#{ship})".green
+    # puts ' --> ☠️'.red if ship.to_s != '700E 1256S - 1956'
   end
 end
