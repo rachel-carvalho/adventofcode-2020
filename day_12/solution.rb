@@ -1,31 +1,28 @@
 require 'benchmark'
 require '../colors'
 
+@directions = {
+  'N' => [-1, 0],
+  'E' => [0, 1],
+  'S' => [1, 0],
+  'W' => [0, -1]
+}
+
 def calculate_manhattan_position(instructions)
   state = {
     position: [0, 0],
-    direction: [0, 1]
+    direction: 'E'
   }
 
   instructions.each do |instruction|
     move, value = instruction.scan(/(\w)(\d+)/).first
     value = value.to_i
 
-    case move
-    when 'R'
-      (value / 90).times { rotate_right(state) }
-    when 'L'
-      (value / 90).times { rotate_left(state) }
-    when 'F'
-      state[:position] = [state[:position][0] + state[:direction][0] * value, state[:position][1] + state[:direction][1] * value]
-    when 'N'
-      state[:position] = [state[:position][0] - value, state[:position][1]]
-    when 'S'
-      state[:position] = [state[:position][0] + value, state[:position][1]]
-    when 'W'
-      state[:position] = [state[:position][0], state[:position][1] - value]
-    when 'E'
-      state[:position] = [state[:position][0], state[:position][1] + value]
+    if %w[L R].include? move
+      rotate(state, move, value / 90)
+    else
+      direction = move == 'F' ? state[:direction] : move
+      move(state, direction, value)
     end
   end
 
@@ -39,28 +36,16 @@ def readable_coordinate(point, vertical)
   "#{point.abs}#{direction}"
 end
 
-def rotate_right(state)
-  if state[:direction] == [0, 1]
-    state[:direction] = [1, 0]
-  elsif state[:direction] == [1, 0]
-    state[:direction] = [0, -1]
-  elsif state[:direction] == [0, -1]
-    state[:direction] = [-1, 0]
-  elsif state[:direction] == [-1, 0]
-    state[:direction] = [0, 1]
-  end
+def move(state, direction_name, value)
+  direction = @directions[direction_name]
+  state[:position] = [state[:position][0] + direction[0] * value, state[:position][1] + direction[1] * value]
 end
 
-def rotate_left(state)
-  if state[:direction] == [0, 1]
-    state[:direction] = [-1, 0]
-  elsif state[:direction] == [-1, 0]
-    state[:direction] = [0, -1]
-  elsif state[:direction] == [0, -1]
-    state[:direction] = [1, 0]
-  elsif state[:direction] == [1, 0]
-    state[:direction] = [0, 1]
-  end
+def rotate(state, side, times)
+  sides = { 'R' => 1, 'L' => -1 }
+  steps = sides[side] * times
+  next_index = (@directions.keys.index(state[:direction]) + steps) % @directions.keys.count
+  state[:direction] = @directions.keys[next_index]
 end
 
 def answer_icon(result)
@@ -83,6 +68,8 @@ puts 'Input:'
 input = File.readlines('input')
 Benchmark.bm do |benchmark|
   benchmark.report('Manhattan position'.light_blue) do
-    puts " (#{calculate_manhattan_position(input)})".green
+    position = calculate_manhattan_position(input)
+    puts " (#{position})".green
+    puts ' --> ☠️'.red if position != ["700E 1256S", 1956]
   end
 end
