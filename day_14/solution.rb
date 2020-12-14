@@ -26,8 +26,12 @@ def apply_mask(mask, value)
   binary.to_i(2)
 end
 
-def answer_icon(result)
-  expected = 165
+def mask_address_and_sum(program)
+  0
+end
+
+def answer_icon(result, address_mask = false)
+  expected = address_mask ? 208 : 165
   result == expected ? '✔'.green : '✗'.red + " expected #{expected}"
 end
 
@@ -37,16 +41,27 @@ mem[8] = 11
 mem[7] = 101
 mem[8] = 0'.split "\n"
 
+example2 =
+'mask = 000000000000000000000000000000X1001X
+mem[42] = 100
+mask = 00000000000000000000000000000000X0XX
+mem[26] = 1'.split "\n"
+
 puts 'Example:'
-mask_and_sum_memory(example).tap { |result| puts "Memory sum: #{result} #{answer_icon(result)}" }
+mask_and_sum_memory(example).tap { |result| puts "Masked values sum: #{result} #{answer_icon(result)}" }
+mask_address_and_sum(example2).tap { |result| puts "Masked addresses sum: #{result} #{answer_icon(result, true)}" }
 puts ''
 
 puts 'Input:'
 input = File.readlines('input')
 Benchmark.bm do |benchmark|
-  benchmark.report('Memory sum'.light_blue) do
+  benchmark.report('Masked values sum'.light_blue) do
     result = mask_and_sum_memory(input)
     puts " (#{result})".green
     puts ' --> ☠️'.red if result != 6386593869035
+  end
+  benchmark.report('Masked addresses sum'.light_blue) do
+    result = mask_address_and_sum(input)
+    puts " (#{result})".green
   end
 end
