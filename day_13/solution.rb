@@ -12,9 +12,7 @@ end
 
 def first_time_for_sequence(input)
   _, schedule = input.split "\n"
-  lines = schedule.split(',').map(&:to_i).map.with_index.filter do |item|
-    item.first.positive?
-  end
+  lines = schedule.split(',').map(&:to_i).map.with_index.filter { |line, index| line.positive? }
 
   lines.sort_by!(&:first)
 
@@ -24,8 +22,7 @@ def first_time_for_sequence(input)
   loop do
     timestamp = max_line * multiplier
 
-    all_arrived = lines.all? do |item|
-      line, index = item
+    all_arrived = lines.all? do |line, index|
       offset = index - max_line_index
       ((timestamp + offset) % line) == 0
     end
@@ -34,6 +31,24 @@ def first_time_for_sequence(input)
 
     multiplier += 1
   end
+end
+
+def first_time_for_sequence_with_math(input)
+  _, schedule = input.split "\n"
+  lines = schedule.split(',').map(&:to_i).map.with_index.filter { |line, index| line.positive? }
+
+  lines.sort_by!(&:first)
+
+  possible_solution = 0
+  least_common_denominator = 1
+  lines.each do |line, minute_offset|
+    while (possible_solution + minute_offset) % line != 0
+      possible_solution += least_common_denominator
+    end
+    least_common_denominator *= line
+  end
+
+  possible_solution
 end
 
 def answer_icon(result, index = nil)
@@ -60,7 +75,8 @@ examples = [
 puts 'Example:'
 first_bus_to_arrive(examples[0]).tap { |result| puts "First bus: #{result} #{answer_icon(result)}" }
 examples.each_with_index do |example, index|
-  first_time_for_sequence(example).tap { |result| puts "Sequence timestamp #{index}: #{result} #{answer_icon(result, index)}" }
+  first_time_for_sequence(example).tap { |result| puts "Sequence timestamp naive #{index}: #{result} #{answer_icon(result, index)}" }
+  first_time_for_sequence_with_math(example).tap { |result| puts "Sequence timestamp with math #{index}: #{result} #{answer_icon(result, index)}" }
 end
 puts ''
 
@@ -72,8 +88,14 @@ Benchmark.bm do |benchmark|
     puts " (#{result})".green
     puts ' --> ☠️'.red if result != {line: 823, leaves: 1008175, multiplied: 4938}
   end
-  benchmark.report('Sequence timestamp'.light_blue) do
+  benchmark.report('Sequence timestamp naive'.light_blue) do
     result = first_time_for_sequence(input)
     puts " (#{result})".green
+    puts ' --> ☠️'.red if result != 230903629977901
+  end
+  benchmark.report('Sequence timestamp with math'.light_blue) do
+    result = first_time_for_sequence_with_math(input)
+    puts " (#{result})".green
+    puts ' --> ☠️'.red if result != 230903629977901
   end
 end
