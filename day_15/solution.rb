@@ -2,8 +2,7 @@ require 'benchmark'
 require '../colors'
 require 'pry'
 
-def find_2020th_number(starting)
-  position = 2020
+def find_nth_number(starting, position)
   numbers = starting.split(',').map(&:to_i)
 
   while numbers.count < position
@@ -19,9 +18,9 @@ def find_2020th_number(starting)
   numbers.last
 end
 
-def answer_icon(result, index)
-  answers = [436, 1, 10, 27, 78, 438, 1836]
-  expected = answers[index]
+def answer_icon(result, position, index)
+  answers = { 2020 => [436, 1, 10, 27, 78, 438, 1836], 30_000_000 => [175594, 2578, 3544142, 261214, 6895259, 18, 362] }
+  expected = answers[position][index]
   result == expected ? '✔'.green : '✗'.red + " expected #{expected}"
 end
 
@@ -36,8 +35,10 @@ examples = [
 ]
 
 puts 'Example:'
-examples.each_with_index do |example, index|
-  find_2020th_number(example).tap { |result| puts "#{example} - 2020th: #{result} #{answer_icon(result, index)}" }
+[2020, 30_000_000].each do |position|
+  examples.each_with_index do |example, index|
+    find_nth_number(example, position).tap { |result| puts "#{example} - #{position}th: #{result} #{answer_icon(result, position, index)}" }
+  end
 end
 puts ''
 
@@ -45,8 +46,12 @@ puts 'Input:'
 input = '20,0,1,11,6,3'
 Benchmark.bm do |benchmark|
   benchmark.report('2020th'.light_blue) do
-    result = find_2020th_number(input)
+    result = find_nth_number(input, 2020)
     puts " (#{result})".green
     puts ' --> ☠️'.red if result != 421
+  end
+  benchmark.report('30,000,000th'.light_blue) do
+    result = find_nth_number(input, 30_000_000)
+    puts " (#{result})".green
   end
 end
