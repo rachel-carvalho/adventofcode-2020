@@ -1,9 +1,22 @@
 require 'benchmark'
 require '../colors'
+require 'pry'
 
 def find_2020th_number(starting)
   position = 2020
-  0
+  numbers = starting.split(',').map(&:to_i)
+
+  while numbers.count < position
+    last = numbers.last
+    index = numbers[0...-1].rindex(last)
+    if index.nil?
+      numbers << 0
+    else
+      numbers << numbers.count - (index + 1)
+    end
+  end
+
+  numbers.last
 end
 
 def answer_icon(result, index)
@@ -34,5 +47,6 @@ Benchmark.bm do |benchmark|
   benchmark.report('2020th'.light_blue) do
     result = find_2020th_number(input)
     puts " (#{result})".green
+    puts ' --> ☠️'.red if result != 421
   end
 end
