@@ -5,17 +5,23 @@ require 'pry'
 def find_nth_number(starting, position)
   numbers = starting.split(',').map(&:to_i)
 
-  while numbers.count < position
-    last = numbers.last
-    index = numbers[0...-1].rindex(last)
+  positions = numbers.map.with_index.to_a.to_h
+  current_position = numbers.count
+  last = numbers.last
+  positions.delete last
+
+  while current_position < position
+    index = positions[last]
+    positions[last] = current_position - 1
     if index.nil?
-      numbers << 0
+      last = 0
     else
-      numbers << numbers.count - (index + 1)
+      last = current_position - (index + 1)
     end
+    current_position += 1
   end
 
-  numbers.last
+  last
 end
 
 def answer_icon(result, position, index)
@@ -53,5 +59,6 @@ Benchmark.bm do |benchmark|
   benchmark.report('30,000,000th'.light_blue) do
     result = find_nth_number(input, 30_000_000)
     puts " (#{result})".green
+    puts ' --> ☠️'.red if result != 436
   end
 end
