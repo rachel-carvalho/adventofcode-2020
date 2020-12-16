@@ -2,7 +2,26 @@ require 'benchmark'
 require '../colors'
 
 def find_invalid_values(input)
-  []
+  rule_definition, mine, nearby = input.split "\n\n"
+  rules = parse_rules(rule_definition)
+  tickets = parse_tickets(nearby)
+
+  tickets.flatten.filter do |number|
+    rules.values.flatten.none? { |range| range.include?(number) }
+  end
+end
+
+def parse_rules(definition)
+  definition.split("\n").map do |line|
+    name, range1_min, range1_max, range2_min, range2_max = line.scan(/(\w+)\: (\d+)\-(\d+) or (\d+)\-(\d+)/).first
+    [name, [range1_min.to_i..range1_max.to_i, range2_min.to_i..range2_max.to_i]]
+  end.to_h
+end
+
+def parse_tickets(input)
+  input.split("\n")[1..].map do |line|
+    line.split(',').map(&:to_i)
+  end
 end
 
 def answer_icon(result)
@@ -34,5 +53,6 @@ Benchmark.bm do |benchmark|
   benchmark.report('Invalid values sum'.light_blue) do
     result = find_invalid_values(input)
     puts " (#{result.sum})".green
+    puts ' --> ☠️'.red if result != 23925
   end
 end
