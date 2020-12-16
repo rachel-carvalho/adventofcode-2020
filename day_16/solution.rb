@@ -1,26 +1,35 @@
 require 'benchmark'
 require '../colors'
 
-def find_invalid_values(input)
-  rule_definition, mine, nearby = input.split "\n\n"
-  rules = parse_rules(rule_definition)
-  tickets = parse_tickets(nearby)
+class TicketParser
+  attr_reader :rules, :own, :nearby
 
-  tickets.flatten.filter do |number|
-    rules.values.flatten.none? { |range| range.include?(number) }
+  def initialize(input)
+    rule_definition, own, nearby = input.split "\n\n"
+    @rules = parse_rules(rule_definition)
+    @own = parse_tickets(own)
+    @nearby = parse_tickets(nearby)
   end
-end
 
-def parse_rules(definition)
-  definition.split("\n").map do |line|
-    name, range1_min, range1_max, range2_min, range2_max = line.scan(/(\w+)\: (\d+)\-(\d+) or (\d+)\-(\d+)/).first
-    [name, [range1_min.to_i..range1_max.to_i, range2_min.to_i..range2_max.to_i]]
-  end.to_h
-end
+  def invalid_values
+    nearby.flatten.filter do |number|
+      rules.values.flatten.none? { |range| range.include?(number) }
+    end
+  end
 
-def parse_tickets(input)
-  input.split("\n")[1..].map do |line|
-    line.split(',').map(&:to_i)
+  private
+
+  def parse_rules(definition)
+    definition.split("\n").map do |line|
+      name, range1_min, range1_max, range2_min, range2_max = line.scan(/(\w+)\: (\d+)\-(\d+) or (\d+)\-(\d+)/).first
+      [name, [range1_min.to_i..range1_max.to_i, range2_min.to_i..range2_max.to_i]]
+    end.to_h
+  end
+
+  def parse_tickets(input)
+    input.split("\n")[1..].map do |line|
+      line.split(',').map(&:to_i)
+    end
   end
 end
 
@@ -44,15 +53,15 @@ nearby tickets:
 38,6,12'
 
 puts 'Example:'
-find_invalid_values(example).tap { |result| puts "Invalid values sum: #{result} - #{result.sum} #{answer_icon(result)}" }
+TicketParser.new(example).invalid_values.tap { |result| puts "Invalid values sum: #{result} - #{result.sum} #{answer_icon(result)}" }
 puts ''
 
 puts 'Input:'
 input = File.read('input')
 Benchmark.bm do |benchmark|
   benchmark.report('Invalid values sum'.light_blue) do
-    result = find_invalid_values(input)
+    result = TicketParser.new(input).invalid_values
     puts " (#{result.sum})".green
-    puts ' --> ☠️'.red if result != 23925
+    puts ' --> ☠️'.red if result.sum != 23925
   end
 end
