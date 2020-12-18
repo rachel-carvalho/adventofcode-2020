@@ -8,7 +8,13 @@ def sum_weird_arithmetic(expressions)
 end
 
 def solve_weird_arithmetic(expression)
-  0
+  regexp = /(\d+) (\+|\*) (\d+)/
+  while part = expression[regexp]
+    operand1, operator, operand2 = part.scan(regexp).first
+    result = operator == '+' ? (operand1.to_i + operand2.to_i) : (operand1.to_i * operand2.to_i)
+    expression[regexp] = result.to_s
+  end
+  expression.to_i
 end
 
 def answer_icon(result, index)
