@@ -7,20 +7,15 @@ def count_cubes_after(initial_state, fourth_dimention = false)
   initial_state.split("\n").each_with_index do |line, y|
     line.chars.each_with_index do |char, x|
       coordinates = ([0] * (fourth_dimention ? 2 : 1)) + [y, x]
-      universe[coordinates] = char
+      universe[coordinates] = char if char == '#'
     end
   end
 
-  draw(universe)
-
   6.times do |n|
-    puts "\n"
-    puts "cycle #{n + 1}"
     universe = expand(universe)
-    draw(universe)
   end
 
-  universe.values.count '#'
+  universe.values.count
 end
 
 def expand(universe)
@@ -33,40 +28,15 @@ def expand(universe)
   end
   to_add.uniq.each do |coordinates|
     active, _ = active_neighbors(universe, coordinates)
-    expanded[coordinates] = state('.', active)
+    expanded[coordinates] = state(nil, active)
   end
-  expanded
+  expanded.compact
 end
 
 def state(voxel, active)
-  return '.' if voxel == '#' && active != 2 && active != 3
-  return '#' if voxel == '.' && active == 3
+  return nil if voxel == '#' && active != 2 && active != 3
+  return '#' if voxel.nil? && active == 3
   voxel
-end
-
-def draw(universe)
-  fourth_dimention = []
-  offset = universe.keys.map(&:first).min.abs
-  four_d = universe.keys.first.count == 4
-  universe.each do |coordinates, voxel|
-    coords = coordinates.dup
-    w = coords.count == 4 ? coords.shift : 0
-    z, y, x = coords
-    planes = fourth_dimention[w + offset] ||= []
-    plane = planes[z + offset] ||= []
-    line = plane[y + offset] ||= []
-    line[x + offset] ||= voxel
-  end
-  drawing = fourth_dimention.compact.map.with_index do |planes, windex|
-    planes.compact.map.with_index do |plane, zindex|
-      bidimentional = plane.compact.map do |line|
-        line.join('')
-      end
-      (["z: #{zindex - offset} w: #{windex - (four_d ? offset : 0)}"] + bidimentional).join("\n")
-    end.join("\n\n")
-  end.join("\n\n")
-
-  puts drawing
 end
 
 def active_neighbors(universe, coordinates)
@@ -84,11 +54,11 @@ def active_neighbors(universe, coordinates)
           neighbor = [neighbor_z, neighbor_y, neighbor_x]
           neighbor.prepend(neighbor_w) if fourth_dimention
           new_neighbors << neighbor unless universe[neighbor]
-          neighbor == coordinates ? '.' : universe[neighbor] || '.'
+          neighbor == coordinates ? nil : universe[neighbor]
         end
       end
     end
-  end.flatten.count('#')
+  end.flatten.compact.count
 
   [active, new_neighbors]
 end
