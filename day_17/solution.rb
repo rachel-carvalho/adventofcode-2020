@@ -2,7 +2,7 @@ require 'benchmark'
 require '../colors'
 require 'pry'
 
-def count_cubes_after(initial_state, cycles = 6)
+def count_cubes_after(initial_state, dimentions = 3)
   universe = {}
   initial_state.split("\n").each_with_index do |line, y|
     line.chars.each_with_index do |char, x|
@@ -12,7 +12,7 @@ def count_cubes_after(initial_state, cycles = 6)
 
   # draw(universe)
 
-  cycles.times do |n|
+  6.times do |n|
     # puts "\n"
     # puts "cycle #{n + 1}"
     universe = expand(universe)
@@ -78,8 +78,9 @@ def active_neighbors(universe, coordinates)
   [active, new_neighbors]
 end
 
-def answer_icon(result)
-  expected = 112
+def answer_icon(result, dimentions = 3)
+  answers = {3 => 112, 4 => 848}
+  expected = answers[dimentions]
   result == expected ? '✔'.green : '✗'.red + " expected #{expected}"
 end
 
@@ -90,6 +91,7 @@ example =
 
 puts 'Example:'
 count_cubes_after(example).tap { |result| puts "Active cubes: #{result} #{answer_icon(result)}" }
+count_cubes_after(example, 4).tap { |result| puts "Active hypercubes: #{result} #{answer_icon(result, 4)}" }
 puts ''
 
 puts 'Input:'
@@ -99,5 +101,9 @@ Benchmark.bm do |benchmark|
     result = count_cubes_after(input)
     puts " (#{result})".green
     puts ' --> ☠️'.red if result != 348
+  end
+  benchmark.report('Active hypercubes'.light_blue) do
+    result = count_cubes_after(input, 4)
+    puts " (#{result})".green
   end
 end
