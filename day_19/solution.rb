@@ -5,7 +5,7 @@ require 'pry'
 def count_matches(input)
   rule_section, messages = input.split("\n\n")
 
-  rule = first_rule(rule_section)
+  rule = parse_rule(rule_section, ['0']).first
 
   messages.split("\n").count do |message|
     message.strip!
@@ -14,7 +14,7 @@ def count_matches(input)
   end
 end
 
-def first_rule(input)
+def parse_rule(input, rule_indexes)
   rules = input.strip.split("\n").map do |line|
     index, rule = line.scan(/(\d+)\: (.*)/).first
 
@@ -24,13 +24,14 @@ def first_rule(input)
     [index, rule]
   end.to_h
 
-  rule = rules['0']
+  rule_indexes.map do |rule_index|
+    rule = rules[rule_index]
+    while reference_index = rule[/\d+/]
+      rule[/\d+/] = rules[reference_index]
+    end
 
-  while reference_index = rule[/\d+/]
-    rule[/\d+/] = rules[reference_index]
+    rule.gsub(' ', '')
   end
-
-  rule.gsub!(' ', '')
 end
 
 def answer_icon(result, test_rule = false)
@@ -54,7 +55,7 @@ aaabbb
 aaaabbb'
 
 puts 'Example:'
-first_rule(example.split("\n\n").first).tap { |result| puts "First rule: #{result} #{answer_icon(result, true)}" }
+parse_rule(example.split("\n\n").first, ['0']).first.tap { |result| puts "First rule: #{result} #{answer_icon(result, true)}" }
 count_matches(example).tap { |result| puts "Rule 0 matches: #{result} #{answer_icon(result)}" }
 puts ''
 
